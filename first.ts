@@ -115,3 +115,47 @@ interface typeA2 {
   a: string;
 }
 const aWithInter: typeA2 = { a: "hello" };
+
+// interface 확장
+interface AnimalType {
+  breath: true;
+}
+
+interface MammalType extends AnimalType {
+  breed: true;
+}
+const tiger: MammalType = { breath: true, breed: true };
+
+// interface는 여러개 선언 가능 (& 로 묶임)
+interface Acting {
+  talk: () => void;
+}
+
+interface Acting {
+  walk: () => void;
+}
+
+interface Acting {
+  sleep: () => void;
+}
+// 하나라도 구현 안하면 타입 에러
+const todo: Acting = { talk() {}, walk() {}, sleep() {} };
+
+/**
+ * union과 intersection ( |, & )
+ */
+
+// union: 하나의 속성만 있어도 된다.
+type ObjWithUnion = { hello: "world" } | { dongho: "yoon" };
+const objUnion: ObjWithUnion = { hello: "world", dongho: "yoon" };
+
+// intersection: 모든 속성이 다 있어야한다.
+type ObjWithIntersection = { hello: "world" } & { dongho: "yoon" };
+const objIntersection: ObjWithIntersection = { hello: "world", dongho: "yoon" };
+
+// Example (type 상속과 유사)
+type Animal = { breath: true };
+type Mammal = Animal & { breed: true };
+type Human = Mammal & { think: true };
+
+const me: Human = { breath: true, breed: true, think: true };
