@@ -212,3 +212,34 @@ function pet(param: Cat | Dog) {
     console.log(param.meow);
   }
 }
+
+/**
+ *  Promise 타입에 관한 설명
+ */
+
+// Promise -> Pending -> Settled(Resolved, Rejected);
+// promise의 성공, 실패 여부 상관 없이 settled가 된다.
+// Ex. promises.then().catch() 에서
+// then과 catch 모두 settled이고 그 중 then 은 Resolved, catch는 Rejected 이다.
+// type 에서는 PromiseSettledResult에 PromiseRejectedResult와 PromiseFulfilledResult가 있다.
+
+// custom type guard Example -> is 가 붙으면 type guard
+const isRejected = (
+  input: PromiseSettledResult<unknown>
+): input is PromiseRejectedResult => input.status === "rejected";
+const isFulfilled = <T>(
+  input: PromiseSettledResult<T>
+): input is PromiseFulfilledResult<T> => input.status === "fulfilled";
+
+const promises = await Promise.allSettled([
+  Promise.resolve("a"),
+  Promise.resolve("b"),
+]);
+// success 한 것과 errors 인 것만 받고 싶을 때 type guard 사용
+const success = promises.filter(isFulfilled);
+const errors = promises.filter(isRejected);
+// type guard를 사용하지 않고
+// const errors = promises.filter((promise) => promise.status === 'rejected');
+// 를 사용하여도 PromiseSettledResult type으로 추론
+
+export {};
