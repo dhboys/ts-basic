@@ -1,5 +1,7 @@
 /**
+ *
  * interface와 type의 차이
+ *
  */
 
 // inter - 같은 이름의 interface를 사용 가능
@@ -69,6 +71,7 @@ const execHuman = human.talk(); // return type은 void가 된다 -> return 값�
 /**
  *
  * void와 undefined type 에 차이 + declare로 함수를 타입만 사용할 수 있다.
+ *
  */
 
 // forEach 함수 return에 undefined type을 주면 push는 number를 return 하므로 에러 발생
@@ -140,7 +143,9 @@ aOrB(new A()); // aOrB(A) -> class를 넣으면 에러 발생
 aOrB(new B());
 
 /**
+ *
  * type checker
+ *
  */
 
 // 객체간의 type 구별법 -> 내부 속성으로 구별 가능
@@ -214,7 +219,9 @@ function pet(param: Cat | Dog) {
 }
 
 /**
+ *
  *  Promise 타입에 관한 설명
+ *
  */
 
 // Promise -> Pending -> Settled(Resolved, Rejected);
@@ -243,3 +250,109 @@ const errors = promises.filter(isRejected);
 // 를 사용하여도 PromiseSettledResult type으로 추론
 
 export {};
+
+/**
+ * 읽기 전용
+ */
+interface ReadOnlyInter {
+  readonly a: string;
+  b: string;
+}
+const readOnlyObj: ReadOnlyInter = { a: "hello", b: "world" };
+// readOnlyObj.a = '변경불가'
+
+/**
+ * indexed signiture - 모든 속성의 타입을 통일해서 사용하고 싶을 때 사용
+ */
+type IndexedSigNum = { [key: string]: number };
+const indexedNum: IndexedSigNum = { a: 3, b: 4, c: 5 };
+
+// key에 제한을 줄 수도 있다. (mapped type)
+type Gender = "Male" | "Female" | "Bi";
+type GenderObj = { [key in Gender]: number };
+const indexedNumGen: GenderObj = { Male: 1, Female: 2, Bi: 3 };
+
+/**
+ *
+ * class와 interface 관계
+ *
+ */
+
+interface Level {
+  readonly high: string;
+  middle: string;
+  low: string;
+}
+
+class People implements Level {
+  high: string = "high"; // private high: string 으로 지정하면 내부에서만 사용 가능
+  middle: string = "middle"; // protected middle: string 으로 지정하면 상속 받은 class에서도 사용 가능
+  public low: string = "low"; // public -> 인스턴스에서도 사용 가능
+}
+
+// 추상 클래스 구현 가능
+abstract class AbClass {
+  private readonly should: string = "should";
+
+  abstract method(): void;
+}
+
+// abstract method는 반드시 구현해야 한다.
+class ExClass extends AbClass {
+  method(): void {}
+}
+
+/**
+ *
+ *
+ * optional type (있어도 되고 없어도 된다.)
+ *
+ *
+ */
+function optionFunc(a: number, b?: number, c?: number): void {}
+optionFunc(1);
+optionFunc(1, 2);
+optionFunc(1, 2, 3);
+
+// 만약 전부다 받고 싶다면..
+function allArgsFunc(...args: number[]) {}
+allArgsFunc(1, 2, 3, 4, 5, 6);
+
+/**
+ *
+ *
+ * generic - type을 변수처럼 만들어주는 형식 -> 만들 때 type을 정하지 않고 사용할 때 type을 정한다.
+ *
+ *
+ */
+function genericFunc<T extends string | number>(x: T, y: T): void {}
+genericFunc(1, 2);
+genericFunc("1", "2");
+
+// type 추론을 못하면 직접 넣어줄 수 있다 -> type parameter 문법
+genericFunc<string>('1', '2')
+
+// parameter에 각각 다른 type 제한을 줄 수 도 있다.
+function genericFuncWithDiffType<T extends string, K extends number>(
+  x: T,
+  y: K
+): void {}
+
+genericFuncWithDiffType("1", 2);
+
+// Example - forEach 함수와 map 함수
+interface Array<T> {
+  forEach(callbackfn: (value: T, index: number, array: T[]) => void,thisArg?: any): void;
+  map<U>(callbackfn: (value: T, index: number, array: T[]) => U, thisArg?: any): U[];
+}
+
+// forEach 예시
+const numArr: Array<number> = [1, 2, 3]
+numArr.forEach((value) => { console.log(value)});  // 1, 2, 3
+['1', '2', '3'].forEach((value) => { console.log(value)}); // '1', '2', '3'
+['123', 123, true].forEach((value) => { console.log(value)})  
+
+// map 예시
+// T는 number로 추론하고 map 함수에서 callback 함수의 return 값이 U이고 item.toString()이 callback 함수의 return 값이므로 U: string으로 추론된다.
+const strings = [1, 2, 3].map((item) => item.toString())  // ['1', '2', '3']  string[]
+const numbers = [1, 2, 3].map((item) => item + 1 ); //  [2, 3, 4] number[]
