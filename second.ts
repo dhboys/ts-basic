@@ -333,17 +333,16 @@ genericFunc("1", "2");
 genericFunc<string>('1', '2')
 
 // parameter에 각각 다른 type 제한을 줄 수 도 있다.
-function genericFuncWithDiffType<T extends string, K extends number>(
-  x: T,
-  y: K
-): void {}
+function genericFuncWithDiffType<T extends string, K extends number>(x: T,y: K): void {}
 
 genericFuncWithDiffType("1", 2);
 
-// Example - forEach 함수와 map 함수
+// Example - forEach 함수와 map 함수와 filter 함수로 generic 분석
 interface Array<T> {
   forEach(callbackfn: (value: T, index: number, array: T[]) => void,thisArg?: any): void;
   map<U>(callbackfn: (value: T, index: number, array: T[]) => U, thisArg?: any): U[];
+  filter<S extends T>(predicate: (value: T, index: number, array: T[]) => value is S, thisArg?: any): S[];
+  filter(predicate: (value: T, index: number, array: T[]) => unknown, thisArg?: any): T[];
 }
 
 // forEach 예시
@@ -352,7 +351,38 @@ numArr.forEach((value) => { console.log(value)});  // 1, 2, 3
 ['1', '2', '3'].forEach((value) => { console.log(value)}); // '1', '2', '3'
 ['123', 123, true].forEach((value) => { console.log(value)})  
 
-// map 예시
+// map 함수예시
 // T는 number로 추론하고 map 함수에서 callback 함수의 return 값이 U이고 item.toString()이 callback 함수의 return 값이므로 U: string으로 추론된다.
 const strings = [1, 2, 3].map((item) => item.toString())  // ['1', '2', '3']  string[]
 const numbers = [1, 2, 3].map((item) => item + 1 ); //  [2, 3, 4] number[]
+
+// filter 함수 예시
+const filteredNum = [1, 2, 3, 4, 5].filter((value) => value % 2);
+// string과 number 섞인 배열
+const filteredMix = ['1', 2, '3', 4, '5'].filter((value) => typeof value === 'string'); // ['1', '3', '5'] (string | number)[]
+// string[] 으로 정확한 추론을 하고 싶다면..
+const predicate = (value: string | number): value is string => typeof value === 'string'
+const filteredStr = ['1', 2, '3', 4, '5'].filter(predicate);  // ['1', '3', '5'] string[]
+
+/**
+ * 
+ * generic 함수의 type 제한
+ * 
+ */
+
+// <T extends {...}>
+function extendFuncBasic<T extends { a: string }>(x: T): T {return x}
+extendFuncBasic({a: 'hello'})
+
+// <T extends any[]>
+function extendFuncArray<T extends number[]>(x: T): T { return x}
+extendFuncArray([1, 2, 3])
+
+// <T extends (...args: any) => any> -> 모든 함수에 사용
+function extendFuncCallback<T extends (args: string) => number>(x: T): T { return x}
+extendFuncCallback((a) => +a)
+
+// <T extends abstract new (...args: any) => any> -> class 자체를 넣을 때(생성자) -> 즉, new 함수로 만들어서 사용한 인스턴스는 넣을 수 없다.
+function extendFuncClass<T extends abstract new (...args: any) => any>(x: T): T { return x}
+class ExtendClass {}
+extendFuncClass(ExtendClass)
